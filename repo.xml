@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<extensions>
+    <details>
+        <title lang="EN">flipflip's plugin repo</title>
+    </details>
+    <plugins>
+        <plugin name="RatingButtons" version="0.1" minTarget="8.1.0" maxTarget="*">
+            <title lang="EN">Rating Buttons</title>
+            <desc lang="EN">Use remote buttons to rate songs</desc>
+            <url>https://raw.githubusercontent.com/phkehl/lms-plugins/main/RatingButtons-0.1.zip</url>
+            <creator>flipflip</creator>
+            <link>https://github.com/phkehl/lms-plugins</link>
+            <sha>88b9853efeb30e6e276ca4955f63bcebeb35bc03</sha>
+        </plugin>
+    </plugins>
+</extensions>

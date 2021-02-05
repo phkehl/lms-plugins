@@ -1,0 +1,95 @@
+[%######################################################################################################################
+#
+# flipflip's RatingButtons plugin
+#
+# Copyright (c) 2021 Philippe Kehl (flipflip at oinkzwurgl dot org),
+#
+# This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+# License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+# version.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+# warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along with this program. If not, see
+# <https://www.gnu.org/licenses/>.
+#
+######################################################################################################################%]
+
+[% PROCESS settings/header.html %]
+
+    [% WRAPPER setting title="PLUGIN_RATINGBUTTONS_SET_ENABLE" %]
+
+        <input name="pref_buttons_en" id="pref_buttons_en" type="checkbox" [% IF prefs.pref_buttons_en %] checked [% END %]>
+        <label for="pref_buttons_en">[% "PLUGIN_RATINGBUTTONS_SET_ENABLE_DESC" | string %]</label>
+
+    [% END %]
+
+    [% WRAPPER setting title="PLUGIN_RATINGBUTTONS_SET_ACTIONS" %]
+        <table class="ratingbuttons-actions-table">
+            <colgroup>
+                <col class="ratingbuttons-actions-col-1"/>
+                <col class="ratingbuttons-actions-col-2"/>
+                <col class="ratingbuttons-actions-col-3"/>
+            </colgroup>
+            <tr>
+                <th>[% "PLUGIN_RATINGBUTTONS_SET_BUTTONS_BUTTON" | string %]</th>
+                <th>[% "PLUGIN_RATINGBUTTONS_SET_BUTTONS_SINGLE" | string %]</th>
+                <th>[% "PLUGIN_RATINGBUTTONS_SET_BUTTONS_HOLD"   | string %]</th>
+            </tr>
+            [% FOREACH button = buttons; buttonNum = loop.count %]
+            <tr>
+                <td>
+                    <select class="stdedit ratingbuttons-actions-input" name="button_name_[% buttonNum %]" autocomplete="off">
+                        <option name=""></option>
+                    [% FOREACH bnd = button_names_descs %]
+                        <option value="[% bnd.name %]" [% IF button.name == bnd.name %]selected[% END %]>
+                            [% bnd.desc %] ([% bnd.name %])[% IF button.name == bnd.name %] *[% END %]
+                        </option>
+                    [% END %]
+                    </select>
+                </td>
+                <td class="[% IF button_single_error.${buttonNum} != '' %]ratingbuttons-error[% END %]">
+                    <input type="text" class="stdedit ratingbuttons-actions-input"
+                        name="button_single_[% buttonNum %]" value="[% button.single %]"
+                        placeholder="[% "PLUGIN_RATINGBUTTONS_SET_BUTTONS_SINGLE" | string %]" autocomplete="off"/>
+                    <br/>[% button_single_error.${buttonNum} %]</span>
+                </td>
+                <td class="[% IF button_single_error.${buttonNum} != '' %]ratingbuttons-error[% END %]">
+                    <input type="text" class="stdedit ratingbuttons-actions-input"
+                        name="button_hold_[% buttonNum %]"   value="[% button.hold %]"
+                        placeholder="[% "PLUGIN_RATINGBUTTONS_SET_BUTTONS_HOLD"   | string %]" autocomplete="off"/>
+                    <br/>[% button_hold_error.${buttonNum} %]
+
+                </td>
+            </tr>
+            [% END %]
+        </table>
+    [% END %]
+
+    [% WRAPPER setting title="PLUGIN_RATINGBUTTONS_SET_HELP" %]
+
+    <div class="ratingbuttons-help">
+        <p>[% "PLUGIN_RATINGBUTTONS_SET_HELP_1" | string %]</p>
+        <p>[% "PLUGIN_RATINGBUTTONS_SET_HELP_2" | string %]</p>
+        <p>[% "PLUGIN_RATINGBUTTONS_SET_HELP_3" | string %]</p>
+        <p>[% "PLUGIN_RATINGBUTTONS_SET_HELP_4" | string %]</p>
+        <p>[% "PLUGIN_RATINGBUTTONS_SET_HELP_5" | string %]</p>
+        <p>[% "PLUGIN_RATINGBUTTONS_SET_HELP_6" | string %]</p>
+        <p>[% "PLUGIN_RATINGBUTTONS_SET_HELP_7" | string %]</p>
+        <p>[% "PLUGIN_RATINGBUTTONS_SET_HELP_8" | string %]</p>
+        <p>[% "PLUGIN_RATINGBUTTONS_SET_HELP_9" | string %]</p>
+    </div>
+
+    [% END %]
+
+[% PROCESS settings/footer.html %]
+<style type="text/css">
+    .ratingbuttons-actions-col-1 { width: 16em; }
+    .ratingbuttons-actions-col-2 { width: 16em; }
+    .ratingbuttons-actions-col-3 { width: 16em; }
+    .ratingbuttons-actions-input { width: 100%; box-sizing: border-box; }
+    .ratingbuttons-actions-table td, .ratingbuttons-actions-table th { padding: 0.15em 0.25em 0.15em 0; }
+    .ratingbuttons-error, .ratingbuttons-error input { color: red; }
+    .ratingbuttons-help p em { font-style: italic; text-decoration: underline; }
+</style>

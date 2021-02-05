@@ -1,0 +1,98 @@
+PLUGIN_RATINGBUTTONS
+	EN	Rating Buttons
+
+PLUGIN_RATINGBUTTONS_DESC
+	EN	Use remote buttons to rate songs
+
+PLUGIN_RATINGBUTTONS_SONGBYARTIST
+	EN	%s by %s
+
+PLUGIN_RATINGBUTTONS_RATINGIS
+	EN	Rating: %s
+
+PLUGIN_RATINGBUTTONS_NEWRATINGIS
+	EN	New rating: %s
+
+PLUGIN_RATINGBUTTONS_NORATING
+	EN	none
+
+PLUGIN_RATINGBUTTONS_NOTHING
+	EN	No track to rate
+
+PLUGIN_RATINGBUTTONS_SET_HELP
+	EN	Help
+
+PLUGIN_RATINGBUTTONS_SET_ENABLE
+	EN	Enable
+
+PLUGIN_RATINGBUTTONS_SET_ENABLE_DESC
+	EN	Enable button actions
+
+PLUGIN_RATINGBUTTONS_SET_ACTIONS
+	EN	Button actions
+
+PLUGIN_RATINGBUTTONS_SET_BUTTONS_BUTTON
+	EN	Button
+
+PLUGIN_RATINGBUTTONS_SET_BUTTONS_SINGLE
+	EN	Single press action
+
+PLUGIN_RATINGBUTTONS_SET_BUTTONS_HOLD
+	EN	Long press action
+
+PLUGIN_RATINGBUTTONS_BUTTON
+	EN	Button
+
+PLUGIN_RATINGBUTTONS_PRESET
+	EN	Preset
+
+PLUGIN_RATINGBUTTONS_LEFT
+	EN	Left Arrow
+
+PLUGIN_RATINGBUTTONS_RIGHT
+	EN	Right Arrow
+
+PLUGIN_RATINGBUTTONS_SIZE
+	EN	Size
+
+PLUGIN_RATINGBUTTONS_ERROR_SYNTAX
+	EN	Action syntax error
+
+PLUGIN_RATINGBUTTONS_ERROR_ARG_BAD
+	EN	Bad argument %d: %s
+
+PLUGIN_RATINGBUTTONS_ERROR_ARG_EXPECT
+	EN	Expected: %s
+
+PLUGIN_RATINGBUTTONS_ERROR_ARG_MISS
+	EN	Missing argument %d
+
+PLUGIN_RATINGBUTTONS_ERROR_UNKNOWN
+	EN	Unknown action: %s
+
+PLUGIN_RATINGBUTTONS_SET_HELP_1
+	EN	For each button a single (short) button press and and a button hold action can be defined. Each button defined here loses its original functionality in all modes for those actions that are defined. Leave the field empty to keep the button's original single press or button hold functionality.
+
+PLUGIN_RATINGBUTTONS_SET_HELP_2
+	EN	The actions are in the form of <em>action</em> or <em>action(argument, argument, ...)</em>, where <em>action</em> is one of the actions described below. Some actions take one or more <em>argument</em>s. Some arguments are optional (have a default value). The actions apply to the currently playing track or, if in playlist or browse mode, the currently selected track. Rating values are in "stars". Possible values are 1, 2, 3, 4 or 5. A value of 0 means "no rating" or "remove rating".
+
+PLUGIN_RATINGBUTTONS_SET_HELP_3
+	EN	The available actions are:
+
+PLUGIN_RATINGBUTTONS_SET_HELP_4
+	EN	<em>show</em> or <em>show(duration)</em>: Shows the rating on the display. The optional duration is a value in seconds from 0.1 to 10.0. The default duration is 2 (seconds).
+
+PLUGIN_RATINGBUTTONS_SET_HELP_5
+	EN	<em>toggle(first, second)</em>: Toggles the rating between the first and second value and shows the updated rating briefly on the display.
+
+PLUGIN_RATINGBUTTONS_SET_HELP_6
+	EN	<em>rate(value)</em>: Sets the rating to the value and shows the updated rating briefly on the display.
+
+PLUGIN_RATINGBUTTONS_SET_HELP_7
+	EN	<em>inc(value)</em> or <em>dec(value)</em>: Increments or decrements the rating by a value (default: 1) and shows the updated rating briefly on the display.
+
+PLUGIN_RATINGBUTTONS_SET_HELP_8
+	EN	<em>pass</em>: Does nothing.
+
+PLUGIN_RATINGBUTTONS_SET_HELP_9
+	EN	Happy rating! :-)
