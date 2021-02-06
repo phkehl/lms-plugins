@@ -36,3 +36,11 @@ See [Plugin.pm](./RatingButtons/Plugin.pm) for the implementation.
 ![screenshot](RatingButtons-screenshot.png)
 
 ![demo](RatingButtons-demo.gif)
+
+**Changelog:**
+
+- v0.2 -- 2021-02-06
+  - Handle Boom hardware buttons (e.g. 'preset_1', 'add'). This is largely untested.
+- v0.1 -- 2021-02-05
+  - Initial version
+

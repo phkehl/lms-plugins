@@ -176,7 +176,7 @@ sub buttonNamesAndDescs
         { name => 'muting',          desc => string('MUTE')                               . ' ' . $buttonStr },
         { name => 'stop',            desc => string('STOP')                               . ' ' . $buttonStr },
 
-        # Presets on Radio (and Boom?) FIXME: do they work?
+        # Presets buttons on Boom (and Radio?)
         { name => 'preset_1',        desc => string('PLUGIN_RATINGBUTTONS_PRESET')        . ' ' . $buttonStr . ' 1' },
         { name => 'preset_2',        desc => string('PLUGIN_RATINGBUTTONS_PRESET')        . ' ' . $buttonStr . ' 2' },
         { name => 'preset_3',        desc => string('PLUGIN_RATINGBUTTONS_PRESET')        . ' ' . $buttonStr . ' 3' },

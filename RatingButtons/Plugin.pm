@@ -41,7 +41,7 @@ our $LOG = Slim::Utils::Log->addLogCategory( # Logger
 });
 
 our $PREFS      = preferences('plugin.ratingbuttons'); # Plugin preferences
-our $IRCOMMAND  = undef; # Original IR command (Slim::Control::Commands::irCommand())
+our $IRCOMMAND  = undef; # Original IR command
 our $IRSTATE    = {};    # IR code handling state
 our $BUTTONS    = {};    # buttons lookup table: { name => { single => 'command', hold => 'command' }, ... }
 
@@ -67,7 +67,7 @@ sub initPlugin
     $PREFS->setChange(\&prefChange, 'buttons');
     prefChange('buttons', $PREFS->get('buttons'));
 
-    # Patch IR handler (in a few seconds, à la KidsPlay plugin) so that we can handle the IR *codes* ourselves
+    # Patch IR handler (in a few seconds, à la KidsPlay plugin) so that we can handle the IR *codes* and buttons ourselves
     Slim::Utils::Timers::setTimer(undef, (Time::HiRes::time() + 3), \&patchIrCommand);
 
     # An alternative approach might be something like this:
@@ -129,7 +129,7 @@ sub prefChange
                     else
                     {
                         $BUTTONS->{ $button->{name} }->{$style} = \@cmdAndArgs;
-                        $LOG->debug(fmt("Using %10s.%-6s = %s", $button->{name}, $style, "@cmdAndArgs"));
+                        $LOG->debug(fmt("Using %-15s %-6s = %s", $button->{name}, $style, "@cmdAndArgs"));
                     }
                 }
             }
@@ -146,7 +146,7 @@ sub patchIrCommand
 {
     if (!defined $IRCOMMAND)
     {
-        # Replace original IR handler (Slim::Control::Commands::irCommand, set in Slim::Control::Request)
+        # Replace original IR code handler (Slim::Control::Commands::irCommand(), set in Slim::Control::Request::init())
         $IRCOMMAND = Slim::Control::Request::addDispatch([ 'ir', '_ircode', '_time' ], [ 1, 0, 0, \&irCommand ]);
         $LOG->debug('Custom irCommand() request handler installed');
     }
@@ -182,6 +182,16 @@ sub irCommand
     my $irCode = $request->getParam('_ircode');
     my $irName = Slim::Hardware::IR::lookupCodeBytes($client, $irCode); # 'add', 'play', ...
 
+    # Handle Boom buttons behaviour
+    # - They come in as 'preset_1.down', 'preset_1.up', 'add.down', 'add.up', ...
+    # - The first event is 'xxx.down', and a 500ms pause until the next event (either 'xxx.up' or more 'xxx.down' if the button is held)
+    my $isBoomButton = 0;
+    if ($irName =~ m{^(.+)\.(.+)})
+    {
+        $isBoomButton = 1;
+        $irName = $1;
+    }
+
     # Dispatch to original handler unless it's one of our buttons
     if (!$BUTTONS->{$irName})
     {
@@ -197,10 +207,18 @@ sub irCommand
     my $irTime   = $request->getParam('_time'); # 123.456
     my $clientId = $client->id(); # "xx:xx:xx:xx:xx:xx"
 
+    # IR buttons delta time + some
+    my $timerDeltaTime = $Slim::Hardware::IR::IRSINGLETIME;
+
     # Button down, first IR event
     if (!$IRSTATE->{$clientId}->{$irName})
     {
         $IRSTATE->{$clientId}->{$irName} = { first => $irTime, done => 0 };
+        # Add extra time for the first Boom button event (see above)
+        if ($isBoomButton)
+        {
+            $timerDeltaTime += 0.5;
+        }
     }
     # Still down
     else
@@ -211,7 +229,7 @@ sub irCommand
     # Start a timer that will fire after button has been released, if user keeps pressing the buttons we repeatedly
     # get here again, kill the timer and restart it
     Slim::Utils::Timers::killTimers($client, \&checkIr);
-    Slim::Utils::Timers::setTimer($client, Time::HiRes::time() + $Slim::Hardware::IR::IRSINGLETIME, \&checkIr, $irName, $request);
+    Slim::Utils::Timers::setTimer($client, Time::HiRes::time() + $timerDeltaTime, \&checkIr, $irName, $request);
 
     # Button has been held long enough to be a .hold event. Dispatch that event.
     if (!$IRSTATE->{$clientId}->{$irName}->{done} && $IRSTATE->{$clientId}->{$irName}->{last} && 
