@@ -58,9 +58,9 @@ sub handler
         #$LOG->debug(fmt('save buttons: %s', [ sort keys %{$params} ]));
         for (my $n = 1; defined $params->{"button_name_$n"} && ($n <= $Plugins::RatingButtons::Common::MAX_BUTTONS); $n++)
         {
-            my $name   = trim( $params->{"button_name_$n"}   || '' ); 
-            my $single = trim( $params->{"button_single_$n"} || '' );
-            my $hold   = trim( $params->{"button_hold_$n"}   || '' );
+            my $name   = trim( $params->{"button_name_$n"}   // '' ); 
+            my $single = trim( $params->{"button_single_$n"} // '' );
+            my $hold   = trim( $params->{"button_hold_$n"}   // '' );
             # Only keep buttons with at least one action
             if ( (length($name) > 0) && !$buttonsSeen{$name} && ($single || $hold) )
             {

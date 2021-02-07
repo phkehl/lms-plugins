@@ -40,10 +40,12 @@ our $LOG = Slim::Utils::Log->addLogCategory( # Logger
     'description'  => 'PLUGIN_RATINGBUTTONS',
 });
 
-our $PREFS      = preferences('plugin.ratingbuttons'); # Plugin preferences
-our $IRCOMMAND  = undef; # Original IR command
-our $IRSTATE    = {};    # IR code handling state
-our $BUTTONS    = {};    # buttons lookup table: { name => { single => 'command', hold => 'command' }, ... }
+our $PREFS               = preferences('plugin.ratingbuttons'); # Plugin preferences
+our $IRCOMMAND           = undef; # Original IR command
+# our $ORIGBUTTONCOMMAND   = undef; # Original buttons command
+# our $ORIGJIVEFAVCOMMAND  = undef; # Original Radio (?) favorites command
+our $IRSTATE             = {};    # IR code handling state
+our $BUTTONS             = {};    # buttons lookup table: { name => { single => 'command', hold => 'command' }, ... }
 
 sub initPlugin
 {
@@ -129,7 +131,7 @@ sub prefChange
                     else
                     {
                         $BUTTONS->{ $button->{name} }->{$style} = \@cmdAndArgs;
-                        $LOG->debug(fmt("Using %-15s %-6s = %s", $button->{name}, $style, "@cmdAndArgs"));
+                        $LOG->debug(fmt("Using %-15s %-6s = %s", $button->{name}, $style, join(' / ', @cmdAndArgs)));
                     }
                 }
             }
@@ -144,12 +146,22 @@ sub prefChange
 # Replace IR command handler with our own handler
 sub patchIrCommand
 {
+    # Replace original IR code handler (Slim::Control::Commands::irCommand(), set in Slim::Control::Request::init())
     if (!defined $IRCOMMAND)
     {
-        # Replace original IR code handler (Slim::Control::Commands::irCommand(), set in Slim::Control::Request::init())
         $IRCOMMAND = Slim::Control::Request::addDispatch([ 'ir', '_ircode', '_time' ], [ 1, 0, 0, \&irCommand ]);
         $LOG->debug('Custom irCommand() request handler installed');
     }
+    # # Replace original button handler (Slim::Control::Commands::buttonCommand(), set in Slim::Control::Request::init())
+    # if (!defined $ORIGBUTTONCOMMAND)
+    # {
+    #     $ORIGBUTTONCOMMAND = Slim::Control::Request::addDispatch( [ 'button', '_buttoncode', '_time', '_orFunction' ], [ 1, 0, 0, \&buttonCommand ]);
+    # }
+    # # Replace original favorites button handler (Slim::Control::Jive::jiveFavoritesCommand(), set in Slim::Control::Jive::init())
+    # if (!defined $ORIGJIVEFAVCOMMAND)
+    # {
+    #     $ORIGJIVEFAVCOMMAND = Slim::Control::Request::addDispatch([ 'jivefavorites', '_cmd' ], [ 1, 0, 1, \&jiveFavoritesCommand ]);
+    # }
 }
 
 # Pass request on to the original irCommand()
@@ -166,6 +178,51 @@ sub doOrigIrCommand
     }
 }
 
+# # Pass request on to the original buttonCommand()
+# sub doOrigButtonCommand
+# {
+#     my ($request) = @_;
+#     if ($ORIGBUTTONCOMMAND)
+#     {
+#         $ORIGBUTTONCOMMAND->($request);
+#     }
+#     else
+#     {
+#         $request->setStatusDone();
+#     }
+# }
+
+# # Pass request on to the original jiveFavoritesCommand()
+# sub doOrigJiveFavoritesCommand
+# {
+#     my ($request) = @_;
+#     if ($ORIGJIVEFAVCOMMAND)
+#     {
+#         $ORIGJIVEFAVCOMMAND->($request);
+#     }
+#     else
+#     {
+#         $request->setStatusDone();
+#     }
+# }
+
+# sub jiveFavoritesCommand
+# {
+#     my ($request) = @_;
+#     my $cmd = $request->getParam('_cmd');
+#     my $key = $request->getParam('key');
+#     $LOG->debug(fmt('cmd=%s key=%s', $cmd, $key));
+#     doOrigJiveFavoritesCommand($request);
+# }
+
+# sub buttonCommand
+# {
+#     my ($request) = @_;
+#     my $buttoncode = $request->getParam('_buttoncode');
+#     $LOG->debug(fmt('buttoncode=%s', $buttoncode));
+#     doOrigButtonCommand($request);
+# }
+
 # Our IR command handler, which handles our buttons and otherwise forwards the request to the original IR command handler
 sub irCommand
 {
@@ -181,8 +238,11 @@ sub irCommand
     my $client = $request->client();
     my $irCode = $request->getParam('_ircode');
     my $irName = Slim::Hardware::IR::lookupCodeBytes($client, $irCode); # 'add', 'play', ...
+    my $irTime = $request->getParam('_time'); # 123.456
 
-    # Handle Boom buttons behaviour
+    #$LOG->debug(fmt('irCode=%s irName=%s irTime=%.3f', $irCode, $irName, $irTime));
+
+    # Handle Boom buttons
     # - They come in as 'preset_1.down', 'preset_1.up', 'add.down', 'add.up', ...
     # - The first event is 'xxx.down', and a 500ms pause until the next event (either 'xxx.up' or more 'xxx.down' if the button is held)
     my $isBoomButton = 0;
@@ -204,11 +264,10 @@ sub irCommand
     # button only briefly, which is our .single event, or he presses it for a bit longer, which is our .hold event.
     # If the user keeps pressing the button even though the .hold event has been fired, we just ignore that.
 
-    my $irTime   = $request->getParam('_time'); # 123.456
     my $clientId = $client->id(); # "xx:xx:xx:xx:xx:xx"
 
-    # IR buttons delta time + some
-    my $timerDeltaTime = $Slim::Hardware::IR::IRSINGLETIME;
+    # IR buttons delta time + some FIXME: this isn't very reliable... :-/
+    my $timerDeltaTime = 2 * $Slim::Hardware::IR::IRSINGLETIME;
 
     # Button down, first IR event
     if (!$IRSTATE->{$clientId}->{$irName})
@@ -229,7 +288,7 @@ sub irCommand
     # Start a timer that will fire after button has been released, if user keeps pressing the buttons we repeatedly
     # get here again, kill the timer and restart it
     Slim::Utils::Timers::killTimers($client, \&checkIr);
-    Slim::Utils::Timers::setTimer($client, Time::HiRes::time() + $timerDeltaTime, \&checkIr, $irName, $request);
+    Slim::Utils::Timers::setTimer($client, Time::HiRes::time() + $timerDeltaTime, \&checkIr, $irName, $request, $irTime);
 
     # Button has been held long enough to be a .hold event. Dispatch that event.
     if (!$IRSTATE->{$clientId}->{$irName}->{done} && $IRSTATE->{$clientId}->{$irName}->{last} && 
@@ -243,7 +302,7 @@ sub irCommand
     # Otherwise the following will fire when the button has been released
     sub checkIr
     {
-        my ($client, $irName, $request) = @_;
+        my ($client, $irName, $request, $irTime) = @_;
         my $clientId = $client->id();
 
         # Not yet done, i.e. it wasn't a .hold, and hence must be a .single press
@@ -259,10 +318,14 @@ sub irCommand
     # The request will finally terminate in handleButtons()
 }
 
+# Execute action
 sub handleButton
 {
-    my ($irName, $style, $request) = @_; # 'add', ... / , 'single', 'hold' / Slim::Control::Request
+    my ($irName, $style, $request) = @_; # 'add', ... / 'single', 'hold' / Slim::Control::Request
 
+    # ----- What should we do? -----------------------------------------------------------------------------------------
+
+    # Pass on to original handler if we have no action for this button
     my $action = $BUTTONS->{$irName}->{$style};
     if (!$action)
     {
@@ -270,15 +333,36 @@ sub handleButton
         return;
     }
 
+    # Get player mode
+    my $client     = $request->client(); # Slim::Player::Client
+    my $playerMode = $client->getMode(); # "INPUT.List", "screensaver", "playlist", ...
+
+    # Won't do anyting when off, let the original handler worry about that...
+    if ($playerMode =~ m{^(off|block)}i) # "OFF.datetime", ...
+    {
+        doOrigIrCommand($request);
+        return;
+    }
+
     # The button action to handle
     my ($cmd, @args) = @{ $BUTTONS->{$irName}->{$style} };
+    $LOG->debug("($playerMode) $irName.$style, action: $cmd @args");
 
-    # Find track that we want to rate, something like $Slim::Buttons::Common::functions{favorites}
+    # ----- Do actions not specific to playing/selected track ----------------------------------------------------------
+
+    # exec() actions can execute without a track, unless they need it
+    if ( ($cmd eq 'exec') && ("@args" !~ m{\$trackId}i) )
+    {
+        $LOG->debug("EXEC EARLY");
+        doExec($client, @args);
+        $request->setStatusDone();
+        return
+    }
+
+    # ----- Do actions specific to playing/selected track --------------------------------------------------------------
+
+    # Find track that we want to rate, something like what $Slim::Buttons::Common::functions{favorites} does
     my $track = undef;
-    my $client     = $request->client(); # Slim::Player::Client
-    my $playerMode = $client->getMode(); # "INPUT.List", "screensaver", "playlist"
-
-    $LOG->debug("($playerMode) $irName.$style: cmd=$cmd args=@args");
 
     # Now playing list
     if ($playerMode eq 'playlist')
@@ -299,12 +383,7 @@ sub handleButton
             }
         }
     }
-    # Won't do anyting when off
-    elsif ($playerMode =~ m{^(off|block)}i) # "OFF.datetime", ...
-    {
-        # ...
-    }
-    # (else: screensaver) Use currently playing track
+    # (else: screensaver) Use currently playing track -- Note: "off" and "block" modes are already handled aboce
     else
     {
         $track = Slim::Player::Playlist::song($client); # Slim::Schema::Track
@@ -334,6 +413,7 @@ sub handleButton
     # Now we really should have a $track that we can rate
     if ($track)
     {
+        $LOG->debug('trackid ' . $track->id());
         my $trackTitle  = $track->title();      # "Eiland"
         my $trackArtist = $track->artistName(); # "Phenomden & The Scrucialists"
 
@@ -373,6 +453,19 @@ sub handleButton
         {
             $newStars = clipInt($trackStars - $args[0], 0, 5, $trackStars);
             $showRatingDuration = 2.0;
+        }
+        # Execute request
+        elsif ($cmd eq 'exec')
+        {
+            $LOG->debug("EXEC WITH TRACK");
+            doExec($client, $cmd, @args);
+            # Interpolate arguments
+            @args = map
+            {
+                s{\$trackId}{$track->id()}gie;
+                $_
+            } @args;
+            doExec($client, @args);
         }
         # Ignore
         elsif ($cmd eq 'pass')
@@ -415,6 +508,54 @@ sub handleButton
     }
 
     $request->setStatusDone();
+}
+
+sub doExec
+{
+    my ($client, $player, $message, @command) = @_;
+
+    my @clients = ();
+    if ($player eq 'this')
+    {
+        push(@clients, $client);
+    }
+    elsif ($player =~ m{^(others?|all)$}i)
+    {
+        push(@clients, Slim::Player::Client::clients());
+        if ($player =~ m{^others?$}i)
+        {
+            @clients = grep { $_->id() ne $client->id() } @clients;
+        }
+    }
+    else
+    {
+        my $c = Slim::Player::Client::getClient($player);
+        if ($c)
+        {
+            push(@clients, $c);
+        }
+    }
+    
+    if ($#clients < 0)
+    {
+        $LOG->error("No client(s) for exec($player, ...) action!");
+        return;
+    }
+
+    foreach my $c (@clients)
+    {
+        $LOG->debug("exec(@command) for client " . $c->id() . ' (' . $c->name() . ')');
+        Slim::Control::Request::executeRequest($c, \@command); # or $client->execute()
+    }
+
+    if ($message)
+    {
+        $client->showBriefly(
+            { line => [ string('PLUGIN_RATINGBUTTONS'), $message ] },
+            { duration => 2.0, brightness => 'powerOn' });
+    }
+
+    return;
 }
 
 1;

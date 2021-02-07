@@ -298,6 +298,19 @@ sub validateActionStr
         }
         return ( '', $cmd );
     }
+    elsif ($cmd eq 'exec')
+    {
+        if ($#args < 2)
+        {
+            return ( string('PLUGIN_RATINGBUTTONS_ERROR_SYNTAX') );
+        }
+        my $a1 = $args[0];
+        if ($a1 !~ m{^(this|all|others?|[0-9a-f]{2,2}:[0-9a-f]{2,2}:[0-9a-f]{2,2}:[0-9a-f]{2,2}:[0-9a-f]{2,2}:[0-9a-f]{2,2})$}i)
+        {
+            return argErr(1, $a1, 'this, all, others or 01:23:45:67:89:ab');
+        }
+        return ( '', $cmd, @args );
+    }
     else
     {
         return sprintf(string('PLUGIN_RATINGBUTTONS_ERROR_UNKNOWN'), $cmd);

@@ -18,6 +18,15 @@
 
 [% PROCESS settings/header.html %]
 
+
+    [% WRAPPER setting title="PLUGIN_RATINGBUTTONS" %]
+
+    <p>
+        [% "PLUGIN_RATINGBUTTONS_DESC" | string %]
+    </p>
+
+    [% END %]
+
     [% WRAPPER setting title="PLUGIN_RATINGBUTTONS_SET_ENABLE" %]
 
         <input name="pref_buttons_en" id="pref_buttons_en" type="checkbox" [% IF prefs.pref_buttons_en %] checked [% END %]>
@@ -55,7 +64,7 @@
                         placeholder="[% "PLUGIN_RATINGBUTTONS_SET_BUTTONS_SINGLE" | string %]" autocomplete="off"/>
                     <br/>[% button_single_error.${buttonNum} %]</span>
                 </td>
-                <td class="[% IF button_single_error.${buttonNum} != '' %]ratingbuttons-error[% END %]">
+                <td class="[% IF button_hold_error.${buttonNum} != '' %]ratingbuttons-error[% END %]">
                     <input type="text" class="stdedit ratingbuttons-actions-input"
                         name="button_hold_[% buttonNum %]"   value="[% button.hold %]"
                         placeholder="[% "PLUGIN_RATINGBUTTONS_SET_BUTTONS_HOLD"   | string %]" autocomplete="off"/>
@@ -69,16 +78,77 @@
 
     [% WRAPPER setting title="PLUGIN_RATINGBUTTONS_SET_HELP" %]
 
-    <div class="ratingbuttons-help">
-        <p>[% "PLUGIN_RATINGBUTTONS_SET_HELP_1" | string %]</p>
-        <p>[% "PLUGIN_RATINGBUTTONS_SET_HELP_2" | string %]</p>
-        <p>[% "PLUGIN_RATINGBUTTONS_SET_HELP_3" | string %]</p>
-        <p>[% "PLUGIN_RATINGBUTTONS_SET_HELP_4" | string %]</p>
-        <p>[% "PLUGIN_RATINGBUTTONS_SET_HELP_5" | string %]</p>
-        <p>[% "PLUGIN_RATINGBUTTONS_SET_HELP_6" | string %]</p>
-        <p>[% "PLUGIN_RATINGBUTTONS_SET_HELP_7" | string %]</p>
-        <p>[% "PLUGIN_RATINGBUTTONS_SET_HELP_8" | string %]</p>
-        <p>[% "PLUGIN_RATINGBUTTONS_SET_HELP_9" | string %]</p>
+    <div class="ratingbuttons-help helpsection">
+        <p>
+            <b>Note:</b> This plugin only works with Squeezebox Classic, Boom and Transporter.
+            See <a href="https://wiki.slimdevices.com/index.php/Hardware_comparison.html">Hardware comparison</a>.
+        </p>
+        <p>
+            <b>Note:</b> This plugin is experimental. The button handling is not fully reliable in all circumstances.
+        </p>
+        <p>
+            For each button a single (short) button press and and a button hold action can be defined. Each button
+            defined here loses its original functionality in all modes for those actions that are defined. Leave the
+            field empty to keep the button's original single press or button hold functionality. These actions are
+            globally enabled for all players.
+        </p>
+        <p>
+            The actions are in the form of <em>action</em> or <em>action(argument, argument, ...)</em>, where
+            <em>action</em> is one of the actions described below. Some actions take one or more <em>arguments</em>s.
+            Some arguments are optional (have a default value). Rating values are in "stars". Possible <em>value</em>
+            are 1, 2, 3, 4 or 5. A value of 0 means "no rating" or "remove rating".
+        </p>
+        <p>
+            The actions are executed only if a track is currently selected in the playlist or the browse library menu,
+            or if a track is the currently playing while in screensaver mode.
+        </p>
+        <p>
+            The available actions are:
+        </p>
+        <ul>
+            <li>
+                <em>show</em> or <em>show(duration)</em>: Shows the rating on the display. The optional duration is a
+                value in seconds from 0.1 to 10.0. The default duration is 2 (seconds).
+            </li>
+            <li>
+                <em>toggle(value, value)</em>: Toggles the rating between the first and second value and shows the updated
+                rating briefly on the display.
+            </li>
+            <li>
+                <em>rate(value)</em>: Sets the rating to the value and shows the updated rating briefly on the display.
+            </li>
+            <li>
+                <em>inc(value)</em> or <em>dec(value)</em>: Increments or decrements the rating by a value (default: 1) and
+                shows the updated rating briefly on the display.
+            </li>
+            <li>
+                <em>pass</em>: Does nothing.
+            </li>
+        </ul>
+        <p>
+            The following actions are available in any player mode:
+        </p>
+        <ul>
+            <li>
+                <em>exec(player, message, ...)</em>: Executes a player request (command, see <a
+                href="/html/docs/cli-api.html">CLI documentation</a>) on the specified <em>player</em>, optionally
+                briefly showing a <em>message</em> on the current player's display. The <em>player</em> is one of the
+                following: <em>this</em> (the current player), <em>all</em> (all players), <em>others</em> (all other
+                players except the current one), <em>01:23:45:67:89:ab</em> (a specific player identifed by its ID / MAC
+                address).
+                <br/>Interpolates "$trackId" with the currently playing or selected track (as above).
+                <br/>Examples:
+                <br/><em>exec(this, Jumping one track, playlist, jump, +1)</em>: Jump to next track in playlist and briefly
+                show the message "Jumping one track" on the display
+                <br/><em>exec(this, , time, +30)</em>:Advances (seeks) 30 seconds forward, shows no message
+                <br/><em>exec(others, , power, 0)</em>: Powers off all players but the current one
+                <br/><em>exec(this, , ratingslight, setrating, track_id:$trackId, rating:3)</em>: Calls the Rating Light
+                plugin's "setrating" function to set the current track's rating to 3.
+            </li>
+        </ul>
+        <p>
+            Happy rating! :-)
+        </p>
     </div>
 
     [% END %]
@@ -86,10 +156,10 @@
 [% PROCESS settings/footer.html %]
 <style type="text/css">
     .ratingbuttons-actions-col-1 { width: 16em; }
-    .ratingbuttons-actions-col-2 { width: 16em; }
-    .ratingbuttons-actions-col-3 { width: 16em; }
+    .ratingbuttons-actions-col-2 { width: 24em; }
+    .ratingbuttons-actions-col-3 { width: 24em; }
     .ratingbuttons-actions-input { width: 100%; box-sizing: border-box; }
     .ratingbuttons-actions-table td, .ratingbuttons-actions-table th { padding: 0.15em 0.25em 0.15em 0; }
     .ratingbuttons-error, .ratingbuttons-error input { color: red; }
-    .ratingbuttons-help p em { font-style: italic; text-decoration: underline; }
+    .ratingbuttons-help em { font-style: italic; /*text-decoration: underline;*/ font-weight: bold; }
 </style>
