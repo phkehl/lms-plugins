@@ -17,7 +17,9 @@ Inspired by the [RatingsLight](https://github.com/AF-1/lms-ratingslight) and
 
 **Changelog:**
 
-- v0.3 -- 2021-02-7
+- v0.4 -- 2021-03-11
+  - Add RATINGBUTTONS_RATING title format to display the rating (now playing screensaver, music information screen)
+- v0.3 -- 2021-02-07
   - Add exec() action
   - Try to make butten press detection more reliable
   - Cleanup

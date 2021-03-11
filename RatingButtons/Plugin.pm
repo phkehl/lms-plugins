@@ -32,6 +32,7 @@ use Slim::Utils::Log;
 use Slim::Utils::Prefs;
 use Slim::Utils::Strings qw(string);
 use Slim::Hardware::IR;
+use Slim::Music::TitleFormatter;
 
 our $LOG = Slim::Utils::Log->addLogCategory( # Logger
 {
@@ -75,6 +76,9 @@ sub initPlugin
     # An alternative approach might be something like this:
     # Slim::Buttons::Common::setFunction('ratingbuttons', \&handleRatingButtonsCommand);
     # Slim::Control::Request::subscribe( \&patchPlayerButtonMap, [ [ 'client' ] ], [ [ 'new' ] ] );
+
+    # Add title formats
+    addTitleFmt('RATINGBUTTONS_RATING', sub { return titleFmt('rating_notes', @_); });
 
     $class->SUPER::initPlugin(@_);
 }
@@ -487,6 +491,8 @@ sub handleButton
                 { line => [ sprintf(string('PLUGIN_RATINGBUTTONS_SONGBYARTIST'), $trackTitle, $trackArtist),
                             sprintf(string('PLUGIN_RATINGBUTTONS_NEWRATINGIS'), (stars2text($newStars) || string('PLUGIN_RATINGBUTTONS_NORATING'))) ] },
                 { duration => $showRatingDuration, brightness => 'powerOn', });
+            # Clear display cache, e.g. for our custom formats
+            Slim::Music::Info::clearFormatDisplayCache();
         }
         # Or perhaps just show the current rating
         elsif ($showRatingDuration)
@@ -556,6 +562,42 @@ sub doExec
     }
 
     return;
+}
+
+sub addTitleFmt
+{
+    my ($name, $formatter) = @_;
+
+    # Register the format
+    Slim::Music::TitleFormatter::addFormat($name, $formatter);
+
+    # Add it to the list of configured formats
+    # FIXME: In case the user has deleted this format, this will re-add the format on restart
+    my $titleFormats = preferences('server')->get('titleFormat');
+    if (!scalar grep { $_ eq $name } @{$titleFormats})
+    {
+        push(@{$titleFormats}, $name);
+        #preferences('server')->set('titleFormat', $titleFormats);
+    }
+}
+
+sub titleFmt
+{
+    my ($which, $track) = @_;
+    $LOG->debug("which=$which track=%s", ref($track));
+
+    if ($which eq 'rating_notes')
+    {
+        my $trackRating = $track->rating();           # undef, 0..100
+        my $trackStars  = rating2stars($trackRating); # 0..5
+
+        # Return note symbols or a space if no rating
+        return stars2text($trackStars, '') || ' ';
+    }
+    else
+    {
+        return '?';
+    }
 }
 
 1;

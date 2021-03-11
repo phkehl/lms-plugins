@@ -83,8 +83,9 @@ sub stars2rating
 # Convert stars (0..5) to text ('', 'n', 'n n', 'n n n', ..., 'n n n n n', where 'n' is the note symbol)
 sub stars2text
 {
-    my ($stars) = @_;
-    return $stars ? ((chr(1) . ' ') x $stars) : ''; # Note symbol (http://localhost:9000/html/docs/fonts.html)
+    my ($stars, $space) = @_;
+    $space //= ' ';
+    return $stars ? ((chr(1) . $space) x $stars) : ''; # Note symbol (http://localhost:9000/html/docs/fonts.html)
 }
 
 # Format a thing or a string like snprintf() but stringify non-scalar and undef things

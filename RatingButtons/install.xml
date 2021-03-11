@@ -5,9 +5,8 @@
     <module>Plugins::RatingButtons::Plugin</module>
     <defaultState>enabled</defaultState>
     <optionsURL>plugins/RatingButtons/settings.html</optionsURL>
-    <version>0.3</version>
+    <version>0.4</version>
     <creator>flipflip</creator>
-    <email>flipflip@oinkzwurgl.org</email>
     <homepageURL>https://github.com/phkehl/lms-plugins</homepageURL>
     <targetApplication>
         <id>Logitech Media Server</id>
