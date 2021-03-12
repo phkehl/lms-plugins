@@ -584,7 +584,11 @@ sub addTitleFmt
 sub titleFmt
 {
     my ($which, $track) = @_;
-    $LOG->debug("which=$which track=%s", ref($track));
+
+    if (!UNIVERSAL::isa($track, 'Slim::Schema::Track'))
+    {
+        return ' ';
+    }
 
     if ($which eq 'rating_notes')
     {

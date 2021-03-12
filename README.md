@@ -17,6 +17,8 @@ Inspired by the [RatingsLight](https://github.com/AF-1/lms-ratingslight) and
 
 **Changelog:**
 
+- v0.5 -- 2021-03-12
+  - Fix title format rating
 - v0.4 -- 2021-03-11
   - Add RATINGBUTTONS_RATING title format to display the rating (now playing screensaver, music information screen)
 - v0.3 -- 2021-02-07
