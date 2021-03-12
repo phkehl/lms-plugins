@@ -17,6 +17,9 @@ Inspired by the [RatingsLight](https://github.com/AF-1/lms-ratingslight) and
 
 **Changelog:**
 
+- v0.6 -- 2021-03-12
+  - Add rating to track details view stars (and use stars instead of notesymbols in the web interface)
+  - Add sub-menu to set rating of the track (on device, not (yet) in the web interface)
 - v0.5 -- 2021-03-12
   - Fix title format rating
 - v0.4 -- 2021-03-11

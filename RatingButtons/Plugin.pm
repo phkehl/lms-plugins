@@ -33,6 +33,10 @@ use Slim::Utils::Prefs;
 use Slim::Utils::Strings qw(string);
 use Slim::Hardware::IR;
 use Slim::Music::TitleFormatter;
+use Slim::Menu::TrackInfo;
+#use Slim::Web::Pages;
+#use Slim::Web::Pages::JS;
+#use Slim::Web::HTTP;
 
 our $LOG = Slim::Utils::Log->addLogCategory( # Logger
 {
@@ -62,8 +66,8 @@ sub initPlugin
     # Initialise settings (defaults)
     $PREFS->init(
     {
-        buttons_en   => $Plugins::RatingButtons::Common::PREF_BUTTONS_EN_DEFAULT,
-        buttons      => $Plugins::RatingButtons::Common::PREF_BUTTONS_DEFAULT,
+        buttons_en => $Plugins::RatingButtons::Common::PREF_BUTTONS_EN_DEFAULT,
+        buttons    => $Plugins::RatingButtons::Common::PREF_BUTTONS_DEFAULT,
     });
 
     # Subscribe to changes in the buttons preference, and fire it once to update our buttons lookup table
@@ -79,6 +83,15 @@ sub initPlugin
 
     # Add title formats
     addTitleFmt('RATINGBUTTONS_RATING', sub { return titleFmt('rating_notes', @_); });
+
+    # Replace original rating info handler FIXME: good idea?
+    Slim::Menu::TrackInfo->registerInfoProvider( ratingbuttons_rating => ( before => 'moreinfo', func => \&infoRating ) );
+
+    # if (main::WEBUI)
+    # {
+    #     Slim::Web::Pages->addPageFunction('js-main-ratingbuttons.js', \&pageFunctionHandler);
+    #     Slim::Web::Pages::JS->addJSFunction('js-main', 'js-main-ratingbuttons.js');	
+    # }
 
     $class->SUPER::initPlugin(@_);
 }
@@ -603,6 +616,72 @@ sub titleFmt
         return '?';
     }
 }
+
+sub infoRating
+{
+    my ( $client, $url, $track ) = @_; # Slim::Player::Client, string, Slim::Schema::Track
+
+    my $strNothing = string('PLUGIN_RATINGBUTTONS_NOTHING');
+    my $item =
+    {
+        type    => 'text',
+        label   => 'RATING',
+        name    => $strNothing,
+        html    => { name => $strNothing, stars => -1 },
+        web     => { type => 'htmltemplate', value => 'plugins/RatingButtons/inforating.html' },
+    };
+
+    if (UNIVERSAL::isa($track, 'Slim::Schema::Track'))
+    {
+        my $trackRating = $track->rating();           # undef, 0..100
+        my $trackStars  = rating2stars($trackRating); # 0..5
+        my $strNorating = string('PLUGIN_RATINGBUTTONS_NORATING');
+        $item->{name} = stars2text($trackStars) || $strNorating;
+        # Black star: &#9733; White star: &#9734;
+        $item->{html}->{name} = stars2text($trackStars, '', '&#9733;') || $strNorating;
+        $item->{html}->{stars} = $trackStars;
+
+        # Add sub-menu to update the rating
+        delete $item->{type};
+        my $strSetrating = string('PLUGIN_RATINGBUTTONS_SETRATING');
+        my @items = ();
+        for (my $stars = 0; $stars <= 5; $stars++)
+        {
+            push(@items,
+            {
+                name => sprintf($strSetrating, stars2text($stars) || $strNorating),
+                url => \&infoRatingSet, passthrough => [ $track, $stars ],
+            });
+        }
+        $item->{items} = \@items;
+    }
+
+    return $item;
+}
+
+sub infoRatingSet
+{
+    my ($client, $callback, $params, $track, $stars) = @_;
+
+    $track->rating( stars2rating($stars) );
+    Slim::Music::Info::clearFormatDisplayCache();
+    $callback->([
+    {
+        type => 'text',
+        name => sprintf(string('PLUGIN_RATINGBUTTONS_NEWRATINGIS'), (stars2text($stars) || string('PLUGIN_RATINGBUTTONS_NORATING'))),
+        # Show message briefly and then jump back to track listing
+        # FIXME: how can we make the parent-parent menu text update with the new rating?!
+        showBriefly => 1, popback => 3,
+        favorites => 0, refresh => 1
+    }]);
+}
+
+# sub pageFunctionHandler
+# {
+#     my ($client, $params) = @_; # Slim::Player::Client, HASH
+#     $params->{ratingbuttons} = { foo => 42 };
+#     Slim::Web::HTTP::filltemplatefile('js-main-ratingbuttons.js', $params);
+# }
 
 1;
 ########################################################################################################################
