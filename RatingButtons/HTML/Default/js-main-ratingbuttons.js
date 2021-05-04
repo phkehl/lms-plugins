@@ -16,42 +16,67 @@
 #
 ####################################################################################################################%]*/
 
-
-// Experiments.. not used..
-
-
-
-// hmmm.... [% ratingbuttons.foo %]
 Ext.onReady(function() {
-    
-    console.log('ready! %o', this);
 
-    SqueezeJS.Controller.on({
-        'playlistchange': {
-            fn: function (e)
+    [% INCLUDE plugins/RatingButtons/common.js %]
+
+    // Monkey-patch into the playlist update function
+    let origPlaylistOnUpdated = Main.playlist.onUpdated;
+    Main.playlist.onUpdated = function ()
+    {
+        // Call original handler with its context
+        origPlaylistOnUpdated.call(this);
+
+        // Find our ratings markers and replace with a ratings display thingy
+        document.querySelectorAll(
+            '#' + this.playlistEl + ' .browsedbListItem .playlistSongDetail:nth-of-type(1) a span')
+            .forEach(function (el)
+        {
+            let m = el.textContent.match(ratingExtractRe);
+            if (m)
             {
-                console.log('playlistchange %o', [ e, this ]);
+                let stars   = parseInt(m[2]); // 0..5
+                let trackId = parseInt(m[3]);
+                // Put back all content but our "RATINGBUTTONS_RATING_WEB=<r>" marker
+                el.textContent = m[1] + m[4];
+
+                // Add HTML to title (next to the <a> title link), wrapped in a <div>
+                let div = document.createElement('div');
+                div.classList.add('ratingbuttons-rating-container');
+                div.dataset.trackId = trackId;
+                renderRating(div, stars);
+                el.parentElement /* = a */ .parentElement /* = div */ .appendChild(div);
                 
-            },
-            scope: this
-        },
-        'playerstatechange': {
-            fn: function (e)
-            {
-                console.log('playerstatechange %o', [ e, this ]);
-                
-            },
-            scope: this
-        },
-        'buttonupdate': {
-            fn: function (e)
-            {
-                console.log('playerstatechange %o', [ e, this ]);
-                
-            },
-            scope: this
-        },
-    });
+                // Handle clicks on on the rating thingy, respectively any of elements (stars, ..) within
+                div.onclick = function (e) { updateRating(div, e); };
+            }
+        });
+    };
+
+    //SqueezeJS.Controller.on({
+        // 'playlistchange': {
+        //     fn: function (e)
+        //     {
+        //         console.log('ffi: playlistchange %o', [ e, this ]);
+        //     },
+        //     scope: this
+        // },
+        // 'playerstatechange': {
+        //     fn: function (e)
+        //     {
+        //         console.log('ffi: playerstatechange %o', [ e, this ]);
+        //     },
+        //     scope: this
+        // },
+        // 'buttonupdate': {
+        //     fn: function (e)
+        //     {
+        //         console.log('ffi: playerstatechange %o', [ e, this ]);
+        //     },
+        //     scope: this
+        // },
+    //});
+
     // Object.keys(window).forEach(key => {
     //     if (/^on/.test(key)) {
     //         window.addEventListener(key.slice(2), event => {
@@ -60,4 +85,8 @@ Ext.onReady(function() {
     //     }
     // });
 
-}, { foo: 'bar'});
+},
+// Context
+{
+    clientId: "[% ratingbuttons.clientId %]"
+});

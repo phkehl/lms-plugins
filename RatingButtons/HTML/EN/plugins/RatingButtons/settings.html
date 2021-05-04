@@ -21,9 +21,20 @@
 
     [% WRAPPER setting title="PLUGIN_RATINGBUTTONS" %]
 
-    <p>
-        [% "PLUGIN_RATINGBUTTONS_DESC" | string %]
-    </p>
+        <p>
+            [% "PLUGIN_RATINGBUTTONS_DESC" | string %]
+        </p>
+        <p>
+            <b>Note:</b> This plugin only works with Squeezebox Classic, Boom and Transporter.
+            See <a href="https://wiki.slimdevices.com/index.php/Hardware_comparison.html">Hardware comparison</a>.
+        </p>
+        <p>
+            <b>Note:</b> This plugin is very experimental. The button handling is not fully reliable in all
+            circumstances. YMMV.
+        </p>
+        <p>
+            Happy rating! :-)
+        </p>
 
     [% END %]
 
@@ -79,13 +90,6 @@
     [% WRAPPER setting title="PLUGIN_RATINGBUTTONS_SET_HELP" %]
 
     <div class="ratingbuttons-help helpsection">
-        <p>
-            <b>Note:</b> This plugin only works with Squeezebox Classic, Boom and Transporter.
-            See <a href="https://wiki.slimdevices.com/index.php/Hardware_comparison.html">Hardware comparison</a>.
-        </p>
-        <p>
-            <b>Note:</b> This plugin is experimental. The button handling is not fully reliable in all circumstances.
-        </p>
         <p>
             For each button a single (short) button press and and a button hold action can be defined. Each button
             defined here loses its original functionality in all modes for those actions that are defined. Leave the
@@ -147,11 +151,35 @@
             </li>
         </ul>
         <p>
-            Happy rating! :-)
+            The track rating functionality is also available in the song menu on the player itself.
         </p>
     </div>
 
     [% END %]
+
+    [% WRAPPER setting title="PLUGIN_RATINGBUTTONS_FMT_HELP" %]
+
+    <div class="ratingbuttons-help helpsection">
+        <p>
+            The following player title formats can be used:
+        </p>
+        <ul>
+            <li>
+                <em>RATINGBUTTONS_RATING_NOTES</em> shows the zero to five stars rating as asterisks
+            </li>
+            <li>
+                <em>RATINGBUTTONS_RATING_STARS</em> shows the zero to five stars rating as note symbols
+            </li>
+        </ul>
+        <p>
+            Additionally the <em>RATINGBUTTONS_RATING_WEB</em> format is available for the web interface.
+            It shows the rating using zero to five stars. The rating can be changed by hovering over the song in the
+            playlist and clicking the stars. This only works with the Default web interface skin.
+        </p>
+    </div>
+
+    [% END %]
+
 
 [% PROCESS settings/footer.html %]
 <style type="text/css">
@@ -162,4 +190,5 @@
     .ratingbuttons-actions-table td, .ratingbuttons-actions-table th { padding: 0.15em 0.25em 0.15em 0; }
     .ratingbuttons-error, .ratingbuttons-error input { color: red; }
     .ratingbuttons-help em { font-style: italic; /*text-decoration: underline;*/ font-weight: bold; }
+    .ratingbuttons-help ul { margin-bottom: 1em; }
 </style>

@@ -5,7 +5,7 @@
     <module>Plugins::RatingButtons::Plugin</module>
     <defaultState>enabled</defaultState>
     <optionsURL>plugins/RatingButtons/settings.html</optionsURL>
-    <version>0.6</version>
+    <version>0.7</version>
     <creator>flipflip</creator>
     <homepageURL>https://github.com/phkehl/lms-plugins</homepageURL>
     <targetApplication>

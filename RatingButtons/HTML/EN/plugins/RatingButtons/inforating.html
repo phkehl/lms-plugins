@@ -16,4 +16,35 @@
 #
 ######################################################################################################################%]
 
-[% "RATING" | string %]: [% item.html.name %]
+<style type="text/css">
+.ratingbuttons-info-rating { display: none; }
+</style>
+
+[% "RATING" | string %]: <span class="ratingbuttons-info-rating">[% item.html.name %]</span>
+
+<script type="text/javascript">
+Ext.onReady(function() {
+
+    [% INCLUDE plugins/RatingButtons/common.js %]
+
+    document.querySelectorAll('.ratingbuttons-info-rating').forEach(function (el)
+    {
+        let m = el.textContent.match(ratingExtractRe);
+        if (m)
+        {
+            let stars   = parseInt(m[2]); // 0..5
+            let trackId = parseInt(m[3]);
+
+            // Add rating thingy
+            let div = document.createElement('div');
+            div.classList.add('ratingbuttons-rating-container');
+            div.dataset.trackId = trackId;
+            renderRating(div, stars);
+            el.parentElement.appendChild(div);
+            
+            // Handle clicks on on the rating thingy, respectively any of elements (stars, ..) within
+            div.onclick = function (e) { updateRating(div, e); };
+        }
+    });
+}, {});
+</script>

@@ -2,7 +2,7 @@ PLUGIN_RATINGBUTTONS
 	EN	Rating Buttons
 
 PLUGIN_RATINGBUTTONS_DESC
-	EN	Use remote buttons to rate songs on Squeezebox Classic, Boom and Transporter
+	EN	Use remote buttons and the default web interace to rate songs on Squeezebox Classic, Boom and Transporter
 
 PLUGIN_RATINGBUTTONS_SONGBYARTIST
 	EN	%s by %s
@@ -23,7 +23,10 @@ PLUGIN_RATINGBUTTONS_NOTHING
 	EN	No track to rate
 
 PLUGIN_RATINGBUTTONS_SET_HELP
-	EN	Help
+	EN	Buttons help
+
+PLUGIN_RATINGBUTTONS_FMT_HELP
+	EN	Title formats
 
 PLUGIN_RATINGBUTTONS_SET_ENABLE
 	EN	Enable

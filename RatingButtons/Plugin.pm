@@ -34,9 +34,9 @@ use Slim::Utils::Strings qw(string);
 use Slim::Hardware::IR;
 use Slim::Music::TitleFormatter;
 use Slim::Menu::TrackInfo;
-#use Slim::Web::Pages;
-#use Slim::Web::Pages::JS;
-#use Slim::Web::HTTP;
+use Slim::Web::Pages;
+use Slim::Web::Pages::JS;
+use Slim::Web::HTTP;
 
 our $LOG = Slim::Utils::Log->addLogCategory( # Logger
 {
@@ -82,16 +82,24 @@ sub initPlugin
     # Slim::Control::Request::subscribe( \&patchPlayerButtonMap, [ [ 'client' ] ], [ [ 'new' ] ] );
 
     # Add title formats
-    addTitleFmt('RATINGBUTTONS_RATING', sub { return titleFmt('rating_notes', @_); });
+    # For player display: Settings -> Player -> Basic Settings -> Title Format
+    # For (default) web interface: Settings -> Interface -> Title Format
+    addTitleFmt('RATINGBUTTONS_RATING_NOTES', sub { return titleFmt('rating_notes', @_); });
+    addTitleFmt('RATINGBUTTONS_RATING_STARS', sub { return titleFmt('rating_stars', @_); });
+    addTitleFmt('RATINGBUTTONS_RATING_WEB',   sub { return titleFmt('rating_web',   @_); });
 
-    # Replace original rating info handler FIXME: good idea?
+    # Replace original rating info handler (for player menu and web interface) FIXME: good idea?
     Slim::Menu::TrackInfo->registerInfoProvider( ratingbuttons_rating => ( before => 'moreinfo', func => \&infoRating ) );
 
-    # if (main::WEBUI)
-    # {
-    #     Slim::Web::Pages->addPageFunction('js-main-ratingbuttons.js', \&pageFunctionHandler);
-    #     Slim::Web::Pages::JS->addJSFunction('js-main', 'js-main-ratingbuttons.js');	
-    # }
+    # Inject our Javascript into the main js code (which is included by the main html page)
+    if (main::WEBUI)
+    {
+        Slim::Web::Pages->addPageFunction('js-main-ratingbuttons.js', \&pageFunctionHandler);
+        Slim::Web::Pages::JS->addJSFunction('js-main', 'js-main-ratingbuttons.js');
+    }
+
+    # Register (JSONRPC) command to set rating of a track
+    Slim::Control::Request::addDispatch([ 'ratingbuttons', 'setrating', '_trackid', '_stars' ], [ 0, 0, 1, \&setRating ]);
 
     $class->SUPER::initPlugin(@_);
 }
@@ -603,13 +611,33 @@ sub titleFmt
         return ' ';
     }
 
+    # Return note symbols or a space if no rating
     if ($which eq 'rating_notes')
     {
         my $trackRating = $track->rating();           # undef, 0..100
         my $trackStars  = rating2stars($trackRating); # 0..5
-
-        # Return note symbols or a space if no rating
         return stars2text($trackStars, '') || ' ';
+    }
+    # Return stars or a space if no rating
+    elsif ($which eq 'rating_stars')
+    {
+        my $trackRating = $track->rating();           # undef, 0..100
+        my $trackStars  = rating2stars($trackRating); # 0..5
+        return stars2text($trackStars, '', '*') || ' ';
+    }
+    # Return specially formatted text that we can perse in js-main-ratingbuttons.js
+    elsif ($which eq 'rating_web')
+    {
+        if (UNIVERSAL::isa($track, 'Slim::Schema::Track') && !$track->isRemoteURL())
+        {
+            my $trackRating = $track->rating();           # undef, 0..100
+            my $trackStars  = rating2stars($trackRating); # 0..5
+            return 'RATINGBUTTONS_RATING_WEB=/' . $trackStars  . ',' . $track->id() . '/';
+        }
+        else
+        {
+            return '';
+        }
     }
     else
     {
@@ -637,8 +665,7 @@ sub infoRating
         my $trackStars  = rating2stars($trackRating); # 0..5
         my $strNorating = string('PLUGIN_RATINGBUTTONS_NORATING');
         $item->{name} = stars2text($trackStars) || $strNorating;
-        # Black star: &#9733; White star: &#9734;
-        $item->{html}->{name} = stars2text($trackStars, '', '&#9733;') || $strNorating;
+        $item->{html}->{name} = titleFmt('rating_web', $track);
         $item->{html}->{stars} = $trackStars;
 
         # Add sub-menu to update the rating
@@ -676,12 +703,33 @@ sub infoRatingSet
     }]);
 }
 
-# sub pageFunctionHandler
-# {
-#     my ($client, $params) = @_; # Slim::Player::Client, HASH
-#     $params->{ratingbuttons} = { foo => 42 };
-#     Slim::Web::HTTP::filltemplatefile('js-main-ratingbuttons.js', $params);
-# }
+sub pageFunctionHandler
+{
+    my ($client, $params) = @_; # Slim::Player::Client, HASH
+    $params->{ratingbuttons} =
+    {
+        clientId => $client->id(),
+    };
+    return Slim::Web::HTTP::filltemplatefile('js-main-ratingbuttons.js', $params);
+}
+
+sub setRating
+{
+    my ($request) = @_; # Slim::Control::Request
+    # 'ratingbuttons', 'setrating', '_trackid', '_stars'
+
+    my $trackId = $request->getParam('_trackid');
+    my $stars   = $request->getParam('_stars');
+    my $track   = Slim::Schema->resultset('Track')->find($trackId);
+    if (defined $stars && UNIVERSAL::isa($track, 'Slim::Schema::Track'))
+    {
+        $LOG->debug(fmt('trackId=%s stars=%s', $trackId, $stars));
+        $track->rating( stars2rating($stars) );
+        Slim::Music::Info::clearFormatDisplayCache();
+    }
+
+    $request->setStatusDone();
+}
 
 1;
 ########################################################################################################################
