@@ -655,7 +655,7 @@ sub infoRating
         type    => 'text',
         label   => 'RATING',
         name    => $strNothing,
-        html    => { name => $strNothing, stars => -1 },
+        html    => { name => $strNothing }, #, stars => -1 },
         web     => { type => 'htmltemplate', value => 'plugins/RatingButtons/inforating.html' },
     };
 
@@ -668,7 +668,7 @@ sub infoRating
         $item->{html}->{name} = titleFmt('rating_web', $track);
         $item->{html}->{stars} = $trackStars;
 
-        # Add sub-menu to update the rating
+        # Add player sub-menu to update the rating
         delete $item->{type};
         my $strSetrating = string('PLUGIN_RATINGBUTTONS_SETRATING');
         my @items = ();

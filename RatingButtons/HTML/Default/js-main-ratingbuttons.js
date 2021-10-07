@@ -37,7 +37,7 @@ Ext.onReady(function() {
             {
                 let stars   = parseInt(m[2]); // 0..5
                 let trackId = parseInt(m[3]);
-                // Put back all content but our "RATINGBUTTONS_RATING_WEB=<r>" marker
+                // Put back all content but our marker
                 el.textContent = m[1] + m[4];
 
                 // Add HTML to title (next to the <a> title link), wrapped in a <div>
@@ -85,6 +85,20 @@ Ext.onReady(function() {
     //     }
     // });
 
+    // Left frame content is a iframe
+    // let leftIframe = document.getElementById('leftcontent');
+    // if (leftIframe)
+    // {
+    //     let leftDoc = leftIframe.contentWindow ? leftIframe.contentWindow.document : leftIframe.contentDocument;
+    //     console.log('leftDoc %o', leftDoc);
+    //     // Whenever that iframe loads (changes)...
+    //     leftIframe.addEventListener('load', function ()
+    //     {
+    //         console.log('frame load...');
+    //         // ...check if we can add ratings to some listed songs
+    //         // TODO...   (and then what...?)
+    //     }, true);
+    // }
 },
 // Context
 {

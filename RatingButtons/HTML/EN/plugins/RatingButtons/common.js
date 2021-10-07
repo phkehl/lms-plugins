@@ -16,6 +16,8 @@
 #
 ####################################################################################################################%]*/
 
+// RatingButtons/common.js
+
 const ratingTitles =
 [
     'Set rating to no stars',
@@ -26,6 +28,7 @@ const ratingTitles =
     'Set rating to five stars',
 ];
 
+// ...RATINGBUTTONS_RATING_WEB=/<stars>,<trackid>/...
 const ratingExtractRe = '(.*)(?:RATINGBUTTONS_RATING_WEB=/([012345]),([0-9]+)/)(.*)';
 
 // Render the rating thingy

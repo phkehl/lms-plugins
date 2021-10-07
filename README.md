@@ -18,6 +18,8 @@ Inspired by the [RatingsLight](https://github.com/AF-1/lms-ratingslight) and
 ![demo](RatingButtons-demo-web.gif)
 
 **Changelog:**
+- v0.8 -- 2021-10-07
+  - Cosmetics
 - v0.7 -- 2021-05-04
   - The RATINGBUTTONS_RATING title format is now called RATINGBUTTONS_RATING_NOTES.
   - Added RATINGBUTTONS_RATING_STARS title format.
@@ -41,7 +43,4 @@ Inspired by the [RatingsLight](https://github.com/AF-1/lms-ratingslight) and
 
 **TODO:**
 
-- Update GIF
-- Show ratings in now playing list in the web interface
-- Perhaps add function to change rating in web interface (though, Ratings Light can do that already..)
-- Add to <https://github.com/LMS-Community/lms-plugin-repository>
+- Update GIFs

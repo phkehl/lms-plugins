@@ -16,6 +16,8 @@
 #
 ######################################################################################################################%]
 
+<!-- RatingButtons/inforating.html -->
+
 <style type="text/css">
 .ratingbuttons-info-rating { display: none; }
 </style>
@@ -44,6 +46,10 @@ Ext.onReady(function() {
             
             // Handle clicks on on the rating thingy, respectively any of elements (stars, ..) within
             div.onclick = function (e) { updateRating(div, e); };
+        }
+        else
+        {
+            el.classList.remove('ratingbuttons-info-rating');
         }
     });
 }, {});
