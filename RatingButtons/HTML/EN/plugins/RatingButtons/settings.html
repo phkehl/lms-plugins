@@ -70,13 +70,13 @@
                     </select>
                 </td>
                 <td class="[% IF button_single_error.${buttonNum} != '' %]ratingbuttons-error[% END %]">
-                    <input type="text" class="stdedit ratingbuttons-actions-input"
+                    <input type="text" class="stdedit ratingbuttons-actions-input ratingbuttons-code"
                         name="button_single_[% buttonNum %]" value="[% button.single %]"
                         placeholder="[% "PLUGIN_RATINGBUTTONS_SET_BUTTONS_SINGLE" | string %]" autocomplete="off"/>
                     <br/>[% button_single_error.${buttonNum} %]</span>
                 </td>
                 <td class="[% IF button_hold_error.${buttonNum} != '' %]ratingbuttons-error[% END %]">
-                    <input type="text" class="stdedit ratingbuttons-actions-input"
+                    <input type="text" class="stdedit ratingbuttons-actions-input ratingbuttons-code"
                         name="button_hold_[% buttonNum %]"   value="[% button.hold %]"
                         placeholder="[% "PLUGIN_RATINGBUTTONS_SET_BUTTONS_HOLD"   | string %]" autocomplete="off"/>
                     <br/>[% button_hold_error.${buttonNum} %]
@@ -97,9 +97,10 @@
             globally enabled for all players.
         </p>
         <p>
-            The actions are in the form of <em>action</em> or <em>action(argument, argument, ...)</em>, where
-            <em>action</em> is one of the actions described below. Some actions take one or more <em>arguments</em>s.
-            Some arguments are optional (have a default value). Rating values are in "stars". Possible <em>value</em>
+            The actions are in the form of <em class="ratingbuttons-code">action</em> or <em class="ratingbuttons-code">action(argument, argument, ...)</em>,
+            where <em class="ratingbuttons-code">action</em> is one of the actions described below. Some actions take one or more
+            <em class="ratingbuttons-code">argument</em>s.
+            Some arguments are optional (have a default value). Rating values are in "stars". Possible <em class="ratingbuttons-code">value</em>
             are 1, 2, 3, 4 or 5. A value of 0 means "no rating" or "remove rating".
         </p>
         <p>
@@ -111,43 +112,55 @@
         </p>
         <ul>
             <li>
-                <em>show</em> or <em>show(duration)</em>: Shows the rating on the display. The optional duration is a
-                value in seconds from 0.1 to 10.0. The default duration is 2 (seconds).
+                <em class="ratingbuttons-code">show</em> or <em class="ratingbuttons-code">show(duration)</em>:
+                Shows the rating on the display. The optional duration is a value in seconds from 0.1 to 10.0. The
+                default duration is 2 (seconds).
             </li>
             <li>
-                <em>toggle(value, value)</em>: Toggles the rating between the first and second value and shows the updated
-                rating briefly on the display.
+                <em class="ratingbuttons-code">toggle(value, value)</em>:
+                Toggles the rating between the first and second value and shows the updated rating briefly on the display.
             </li>
             <li>
-                <em>rate(value)</em>: Sets the rating to the value and shows the updated rating briefly on the display.
+                <em class="ratingbuttons-code">rate(value)</em>:
+                Sets the rating to the value and shows the updated rating briefly on the display.
             </li>
             <li>
-                <em>inc(value)</em> or <em>dec(value)</em>: Increments or decrements the rating by a value (default: 1) and
-                shows the updated rating briefly on the display.
+                <em class="ratingbuttons-code">inc(value)</em> or <em class="ratingbuttons-code">dec(value)</em>:
+                Increments or decrements the rating by a value (default: 1) and shows the updated rating briefly on the display.
             </li>
             <li>
-                <em>pass</em>: Does nothing.
+                <em class="ratingbuttons-code">pass</em>:
+                Does nothing.
             </li>
         </ul>
         <p>
-            The following actions are available in any player mode:
+            The following <em class="ratingbuttons-code">action</em>s are available in any player mode:
         </p>
         <ul>
             <li>
-                <em>exec(player, message, ...)</em>: Executes a player request (command, see <a
-                href="/html/docs/cli-api.html">CLI documentation</a>) on the specified <em>player</em>, optionally
-                briefly showing a <em>message</em> on the current player's display. The <em>player</em> is one of the
-                following: <em>this</em> (the current player), <em>all</em> (all players), <em>others</em> (all other
-                players except the current one), <em>01:23:45:67:89:ab</em> (a specific player identifed by its ID / MAC
-                address).
-                <br/>Interpolates "$trackId" with the currently playing or selected track (as above).
+                <em class="ratingbuttons-code">exec(player, message, ...)</em>:
+                Executes a player request (command, see <a href="/html/docs/cli-api.html">CLI documentation</a>) on the
+                specified <em class="ratingbuttons-code">player</em>, optionally briefly showing a
+                <em class="ratingbuttons-code">message</em> on the current player's display. The <em class="ratingbuttons-code">player</em>
+                is one of the following: <em class="ratingbuttons-code">this</em> (the current player), <em class="ratingbuttons-code">all</em> (all players),
+                <em class="ratingbuttons-code">others</em> (all other players except the current one), <em class="ratingbuttons-code">01:23:45:67:89:ab</em>
+                (a specific player identifed by its ID / MAC address).
+                <br/>In the commands the variable <em class="ratingbuttons-code">$trackId</em> interpolates with the currently
+                playing or selected track (as above).
                 <br/>Examples:
-                <br/><em>exec(this, Jumping one track, playlist, jump, +1)</em>: Jump to next track in playlist and briefly
+                <br/><em class="ratingbuttons-code">exec(this, Jumping one track, playlist, jump, +1)</em>: Jump to next track in playlist and briefly
                 show the message "Jumping one track" on the display
-                <br/><em>exec(this, , time, +30)</em>:Advances (seeks) 30 seconds forward, shows no message
-                <br/><em>exec(others, , power, 0)</em>: Powers off all players but the current one
-                <br/><em>exec(this, , ratingslight, setrating, track_id:$trackId, rating:3)</em>: Calls the Rating Light
+                <br/><em class="ratingbuttons-code">exec(this, , time, +30)</em>:Advances (seeks) 30 seconds forward, shows no message
+                <br/><em class="ratingbuttons-code">exec(this, Rewind 30 seconds, time, -30)</em>:Advances (seeks) 30 seconds forward, briefly show "Rewind 30 seconds" message
+                <br/><em class="ratingbuttons-code">exec(others, , power, 0)</em>: Powers off all players but the current one
+                <br/><em class="ratingbuttons-code">exec(this, , ratingslight, setrating, track_id:$trackId, rating:3)</em>: Calls the Rating Light
                 plugin's "setrating" function to set the current track's rating to 3.
+            </li>
+            <li>
+                <em class="ratingbuttons-code">mode(name)</em>:
+                Sets the player mode to <em class="ratingbuttons-code">name</em>.
+                <br/>Examples:
+                <br/><em class="ratingbuttons-code">mode(Slim::Plugin::SongScanner::Plugin)</em>: Songscanner mode
             </li>
         </ul>
         <p>
@@ -191,4 +204,5 @@
     .ratingbuttons-error, .ratingbuttons-error input { color: red; }
     .ratingbuttons-help em { font-style: italic; /*text-decoration: underline;*/ font-weight: bold; }
     .ratingbuttons-help ul { margin-bottom: 1em; }
+    .ratingbuttons-code { font-family: monospace; }
 </style>

@@ -313,6 +313,20 @@ sub validateActionStr
         }
         return ( '', $cmd, @args );
     }
+    elsif ($cmd eq 'mode')
+    {
+        if ($#args > 0)
+        {
+            return ( string('PLUGIN_RATINGBUTTONS_ERROR_SYNTAX') );
+        }
+        my $a1 = $args[0] // 1;
+        if (!defined $a1)
+        {
+            return argMiss(1);
+        }
+        # TODO: check if arg is a valid mode
+        return ( '', $cmd, $a1 );
+    }
     else
     {
         return sprintf(string('PLUGIN_RATINGBUTTONS_ERROR_UNKNOWN'), $cmd);

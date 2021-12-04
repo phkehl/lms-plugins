@@ -25,6 +25,7 @@ use base qw(Slim::Plugin::Base);
 
 use Plugins::RatingButtons::Common ':all';
 use Plugins::RatingButtons::Settings;
+use Slim::Buttons::Common;
 use Slim::Control::Request;
 use Slim::Hardware::IR;
 use Slim::Utils::Timers;
@@ -383,6 +384,13 @@ sub handleButton
         $request->setStatusDone();
         return
     }
+    if ($cmd eq 'mode')
+    {
+        $LOG->debug("MODE EARLY");
+        Slim::Buttons::Common::pushMode($client, @args);
+        $request->setStatusDone();
+        return
+    }
 
     # ----- Do actions specific to playing/selected track --------------------------------------------------------------
 
@@ -408,7 +416,7 @@ sub handleButton
             }
         }
     }
-    # (else: screensaver) Use currently playing track -- Note: "off" and "block" modes are already handled aboce
+    # (else: screensaver) Use currently playing track -- Note: "off" and "block" modes are already handled above
     else
     {
         $track = Slim::Player::Playlist::song($client); # Slim::Schema::Track
